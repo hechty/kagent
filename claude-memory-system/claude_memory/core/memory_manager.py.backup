@@ -83,8 +83,7 @@ class MemoryManager:
         1. Loads essential project and global memories
         2. Analyzes current context and environment
         3. Prepares frequently-used capabilities
-        4. Ensures all memories are loaded into vector store for search
-        5. Returns a comprehensive snapshot of the memory state
+        4. Returns a comprehensive snapshot of the memory state
         
         Args:
             context: Optional context description for this session
@@ -96,24 +95,6 @@ class MemoryManager:
         start_time = datetime.now()
         
         try:
-            # Set session context
-            if context:
-                self._session_context = context
-            
-            # Load all memories from file storage
-            all_memories = self._file_store.load_all_memories()
-            logger.info(f"Loaded {len(all_memories)} memories from file storage")
-            
-            # CRITICAL: Ensure all memories are in vector store for search
-            synced_count = 0
-            for memory in all_memories:
-                if memory.id not in self._vector_store._memory_cache:
-                    self._vector_store.store_memory(memory)
-                    synced_count += 1
-            
-            if synced_count > 0:
-                logger.info(f"Synced {synced_count} memories to vector store")
-                
             # Detect project context
             project_overview = self._detect_project_context()
             
@@ -156,6 +137,7 @@ class MemoryManager:
         except Exception as e:
             logger.error(f"Failed to awaken memory system: {e}")
             raise
+    
     def remember(self,
                 content: Any,
                 memory_type: Union[str, MemoryType],
