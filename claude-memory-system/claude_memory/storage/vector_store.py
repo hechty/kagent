@@ -5,18 +5,74 @@ Enhanced vector storage backend with real semantic search
 import logging
 import numpy as np
 from typing import List, Optional, Dict, Any
-from sklearn.metrics.pairwise import cosine_similarity
 
 from ..models.memory import Memory, MemoryQuery, MemoryResult
 from ..core.config import MemoryConfig
+
+# Try to import scikit-learn with fallback
+try:
+    from sklearn.metrics.pairwise import cosine_similarity
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("scikit-learn not available, using fallback similarity calculation")
 
 logger = logging.getLogger(__name__)
 
 # Global model instance for efficiency
 _sentence_model = None
 
+def fallback_cosine_similarity(a, b):
+    """Fallback cosine similarity calculation without scikit-learn"""
+    dot_product = np.dot(a.flatten(), b.flatten())
+    norm_a = np.linalg.norm(a)
+    norm_b = np.linalg.norm(b)
+    
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    
+    return dot_product / (norm_a * norm_b)
+
+
+def get_embedding_via_api(text: str) -> Optional[np.ndarray]:
+    """Get embedding using SiliconFlow API"""
+    try:
+        import requests
+        
+        # SiliconFlow API配置
+        api_url = "https://api.siliconflow.cn/v1/embeddings"
+        api_key = "sk-lpuljmmwvjwpkluhkglyuqvqhnpzyeumgftjmjlnkxmgjqct"
+        model_name = "Pro/BAAI/bge-m3"
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": model_name,
+            "input": text,
+            "encoding_format": "float"
+        }
+        
+        response = requests.post(api_url, headers=headers, json=data, timeout=10)
+        
+        if response.status_code == 200:
+            result = response.json()
+            embedding = result["data"][0]["embedding"]
+            return np.array(embedding, dtype=np.float32)
+        else:
+            logger.warning(f"API embedding failed: {response.status_code} - {response.text}")
+            return None
+            
+    except Exception as e:
+        logger.warning(f"API embedding error: {e}")
+        return None
+
+
 def get_sentence_model():
-    """Get or initialize the sentence transformer model"""
+    """Get or initialize the sentence transformer model with API fallback"""
     global _sentence_model
     if _sentence_model is None:
         try:
@@ -24,10 +80,10 @@ def get_sentence_model():
             _sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
             logger.info("Loaded sentence transformer model: all-MiniLM-L6-v2")
         except ImportError:
-            logger.warning("sentence-transformers not available, falling back to keyword search")
+            logger.warning("sentence-transformers not available, will try API embedding")
             _sentence_model = None
         except Exception as e:
-            logger.error(f"Failed to load sentence transformer model: {e}")
+            logger.warning(f"Failed to load sentence transformer model: {e}, will try API embedding")
             _sentence_model = None
     return _sentence_model
 
@@ -80,11 +136,20 @@ class VectorStore:
             
             # Generate query embedding for semantic search
             query_embedding = None
+            
+            # Try local model first
             if self._model is not None:
                 try:
                     query_embedding = self._model.encode([query.query])[0]
+                    logger.debug("Generated local query embedding")
                 except Exception as e:
-                    logger.warning(f"Failed to encode query: {e}")
+                    logger.warning(f"Local query encoding failed: {e}, trying API")
+            
+            # Fallback to API embedding for query
+            if query_embedding is None:
+                query_embedding = get_embedding_via_api(query.query)
+                if query_embedding is not None:
+                    logger.debug("Generated API query embedding")
             
             # Search through all memories
             for memory_id, memory in self._memory_cache.items():
@@ -119,17 +184,26 @@ class VectorStore:
     
     def _generate_embedding(self, memory: Memory) -> Optional[np.ndarray]:
         """Generate semantic embedding for a memory"""
-        if self._model is None:
-            return None
+        # Combine title, content, and tags for embedding
+        text_content = f"{memory.title} {memory.content} {' '.join(memory.tags)}"
         
-        try:
-            # Combine title, content, and tags for embedding
-            text_content = f"{memory.title} {memory.content} {' '.join(memory.tags)}"
-            embedding = self._model.encode([text_content])[0]
-            return embedding
-        except Exception as e:
-            logger.error(f"Failed to generate embedding: {e}")
-            return None
+        # Try local model first
+        if self._model is not None:
+            try:
+                embedding = self._model.encode([text_content])[0]
+                logger.debug(f"Generated local embedding for memory {memory.id}")
+                return embedding
+            except Exception as e:
+                logger.warning(f"Local embedding failed: {e}, trying API")
+        
+        # Fallback to API embedding
+        api_embedding = get_embedding_via_api(text_content)
+        if api_embedding is not None:
+            logger.debug(f"Generated API embedding for memory {memory.id}")
+            return api_embedding
+        
+        logger.warning(f"Failed to generate any embedding for memory {memory.id}")
+        return None
     
     def _calculate_relevance(self, memory: Memory, query: MemoryQuery, query_embedding: Optional[np.ndarray]) -> float:
         """Calculate relevance score between memory and query"""
@@ -139,10 +213,15 @@ class VectorStore:
         if query_embedding is not None and memory.id in self._memory_embeddings:
             try:
                 memory_embedding = self._memory_embeddings[memory.id]
-                semantic_similarity = cosine_similarity(
-                    query_embedding.reshape(1, -1),
-                    memory_embedding.reshape(1, -1)
-                )[0][0]
+                
+                if SKLEARN_AVAILABLE:
+                    semantic_similarity = cosine_similarity(
+                        query_embedding.reshape(1, -1),
+                        memory_embedding.reshape(1, -1)
+                    )[0][0]
+                else:
+                    # Use fallback cosine similarity
+                    semantic_similarity = fallback_cosine_similarity(query_embedding, memory_embedding)
                 
                 # Semantic similarity contributes 70% of the score
                 relevance_score += float(semantic_similarity) * 0.7
