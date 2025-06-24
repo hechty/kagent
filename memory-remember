@@ -1,28 +1,57 @@
 #!/bin/bash
 # 简洁的记忆保存命令
-# 使用方法: memory-remember "标题" "内容" [类型] [重要性] [标签...]
+# 使用方法: memory-remember "标题" "内容" [--type TYPE] [--importance N] [--tags "tag1,tag2"]
 
 cd "/root/code/claude-memory-system"
 source .venv/bin/activate
 
-TITLE="$1"
-CONTENT="$2"
-MEMORY_TYPE="${3:-semantic}"
-IMPORTANCE="${4:-5.0}"
-shift 4
-TAGS=("$@")
+TITLE=""
+CONTENT=""
+MEMORY_TYPE="semantic"
+IMPORTANCE="5.0"
+TAGS=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --type)
+            MEMORY_TYPE="$2"
+            shift 2
+            ;;
+        --importance)
+            IMPORTANCE="$2"
+            shift 2
+            ;;
+        --tags)
+            TAGS="$2"
+            shift 2
+            ;;
+        *)
+            if [ -z "$TITLE" ]; then
+                TITLE="$1"
+            elif [ -z "$CONTENT" ]; then
+                CONTENT="$1"
+            fi
+            shift
+            ;;
+    esac
+done
 
 if [ -z "$TITLE" ] || [ -z "$CONTENT" ]; then
-    echo "❌ 用法: memory-remember \"标题\" \"内容\" [类型] [重要性] [标签...]"
+    echo "❌ 用法: memory-remember \"标题\" \"内容\" [--type TYPE] [--importance N] [--tags \"tag1,tag2\"]"
     echo "类型: semantic|episodic|procedural|working (默认:semantic)"
     echo "重要性: 1-10 (默认:5.0)"
-    echo "示例: memory-remember \"Python优化\" \"使用缓存提升性能\" semantic 8.0 Python 性能"
+    echo "示例: memory-remember \"Python优化\" \"使用缓存提升性能\" --type semantic --importance 8.0 --tags \"Python,性能\""
     exit 1
 fi
 
 # 将标签写入临时文件
 TEMP_TAGS_FILE="/tmp/memory_tags_$$"
-printf "%s\n" "${TAGS[@]}" > "$TEMP_TAGS_FILE"
+if [ -n "$TAGS" ]; then
+    echo "$TAGS" | tr ',' '\n' > "$TEMP_TAGS_FILE"
+else
+    echo "" > "$TEMP_TAGS_FILE"
+fi
 
 python3 -c "
 import sys
@@ -43,8 +72,8 @@ try:
         tags = []
     
     memory_id = memory.remember(
-        content='$CONTENT',
-        title='$TITLE',
+        content='''$CONTENT''',
+        title='''$TITLE''',
         memory_type=MemoryType('$MEMORY_TYPE'),
         importance=float('$IMPORTANCE'),
         tags=tags

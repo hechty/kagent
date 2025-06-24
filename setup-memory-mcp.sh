@@ -1,8 +1,6 @@
 #!/bin/bash
-"""
-Claude Code 记忆系统 MCP 工具注册脚本
-一键设置简洁的记忆工具API
-"""
+# Claude Code 记忆系统 MCP 工具注册脚本
+# 一键设置简洁的记忆工具API
 
 set -e
 
@@ -18,7 +16,7 @@ echo "=" * 50
 
 # 获取当前目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MCP_SERVER_PATH="$SCRIPT_DIR/memory-mcp-server.py"
+MCP_SERVER_PATH="$SCRIPT_DIR/memory-mcp-wrapper.sh"
 
 echo -e "${YELLOW}📍 当前目录: $SCRIPT_DIR${NC}"
 echo -e "${YELLOW}🔧 MCP服务器路径: $MCP_SERVER_PATH${NC}"
@@ -36,12 +34,11 @@ if [[ ! -d "$SCRIPT_DIR/claude-memory-system" ]]; then
     exit 1
 fi
 
-# 激活虚拟环境并测试记忆系统
+# 测试记忆系统
 cd "$SCRIPT_DIR/claude-memory-system"
-source .venv/bin/activate
 
 echo -e "${BLUE}🧪 测试记忆系统...${NC}"
-python3 -c "
+uv run python3 -c "
 import sys
 sys.path.insert(0, '.')
 try:

@@ -1,17 +1,37 @@
 #!/bin/bash
 # 简洁的记忆搜索命令
-# 使用方法: memory-recall "搜索关键词" [最大结果数] [最小相关性]
+# 使用方法: memory-recall "搜索关键词" [--max-results N] [--min-relevance N]
 
 cd "/root/code/claude-memory-system"
 source .venv/bin/activate
 
-QUERY="$1"
-MAX_RESULTS="${2:-3}"
-MIN_RELEVANCE="${3:-0.1}"
+QUERY=""
+MAX_RESULTS=3
+MIN_RELEVANCE=0.1
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --max-results)
+            MAX_RESULTS="$2"
+            shift 2
+            ;;
+        --min-relevance)
+            MIN_RELEVANCE="$2"
+            shift 2
+            ;;
+        *)
+            if [ -z "$QUERY" ]; then
+                QUERY="$1"
+            fi
+            shift
+            ;;
+    esac
+done
 
 if [ -z "$QUERY" ]; then
-    echo "❌ 用法: memory-recall \"搜索关键词\" [最大结果数] [最小相关性]"
-    echo "示例: memory-recall \"Python性能优化\" 3 0.1"
+    echo "❌ 用法: memory-recall \"搜索关键词\" [--max-results N] [--min-relevance N]"
+    echo "示例: memory-recall \"Python性能优化\" --max-results 3 --min-relevance 0.1"
     exit 1
 fi
 
@@ -23,7 +43,7 @@ from pathlib import Path
 
 try:
     memory = MemoryManager(Path('..'))
-    results = memory.recall('$QUERY', max_results=$MAX_RESULTS, min_relevance=$MIN_RELEVANCE)
+    results = memory.recall('''$QUERY''', max_results=$MAX_RESULTS, min_relevance=$MIN_RELEVANCE)
     
     if results:
         print(f'🔍 找到 {len(results)} 个相关记忆:')
