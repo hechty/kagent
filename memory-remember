@@ -1,0 +1,71 @@
+#!/bin/bash
+# 简洁的记忆保存命令
+# 使用方法: memory-remember "标题" "内容" [类型] [重要性] [标签...]
+
+cd "/root/code/claude-memory-system"
+source .venv/bin/activate
+
+TITLE="$1"
+CONTENT="$2"
+MEMORY_TYPE="${3:-semantic}"
+IMPORTANCE="${4:-5.0}"
+shift 4
+TAGS=("$@")
+
+if [ -z "$TITLE" ] || [ -z "$CONTENT" ]; then
+    echo "❌ 用法: memory-remember \"标题\" \"内容\" [类型] [重要性] [标签...]"
+    echo "类型: semantic|episodic|procedural|working (默认:semantic)"
+    echo "重要性: 1-10 (默认:5.0)"
+    echo "示例: memory-remember \"Python优化\" \"使用缓存提升性能\" semantic 8.0 Python 性能"
+    exit 1
+fi
+
+# 将标签写入临时文件
+TEMP_TAGS_FILE="/tmp/memory_tags_$$"
+printf "%s\n" "${TAGS[@]}" > "$TEMP_TAGS_FILE"
+
+python3 -c "
+import sys
+sys.path.insert(0, '.')
+from claude_memory import MemoryManager
+from claude_memory.models.memory import MemoryType
+from pathlib import Path
+
+try:
+    memory = MemoryManager(Path('..'))
+    
+    # 读取标签
+    tags = []
+    try:
+        with open('$TEMP_TAGS_FILE', 'r', encoding='utf-8') as f:
+            tags = [line.strip() for line in f if line.strip()]
+    except:
+        tags = []
+    
+    memory_id = memory.remember(
+        content='$CONTENT',
+        title='$TITLE',
+        memory_type=MemoryType('$MEMORY_TYPE'),
+        importance=float('$IMPORTANCE'),
+        tags=tags
+    )
+    
+    print('✅ 记忆保存成功!')
+    print(f'📝 标题: $TITLE')
+    print(f'📄 内容: $CONTENT')
+    print(f'🏷️ 类型: $MEMORY_TYPE')
+    print(f'⭐ 重要性: $IMPORTANCE/10')
+    if tags:
+        print(f'🔖 标签: {\"、\".join(tags)}')
+    print(f'🆔 记忆ID: {memory_id[:8]}...')
+    
+except Exception as e:
+    print(f'❌ 保存失败: {e}')
+    exit(1)
+finally:
+    import os
+    try:
+        os.remove('$TEMP_TAGS_FILE')
+    except:
+        pass
+"

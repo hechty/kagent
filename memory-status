@@ -1,0 +1,36 @@
+#!/bin/bash
+# 简洁的记忆状态查询命令
+# 使用方法: memory-status
+
+cd "/root/code/claude-memory-system"
+source .venv/bin/activate
+
+python3 -c "
+import sys
+sys.path.insert(0, '.')
+from claude_memory import MemoryManager
+from pathlib import Path
+
+try:
+    memory = MemoryManager(Path('..'))
+    snapshot = memory.awaken('状态查询')
+    stats = snapshot.memory_statistics
+    
+    print('🧠 记忆系统状态')
+    print('=' * 30)
+    print(f'📊 总记忆数: {stats.total_memories}')
+    print(f'📈 类型分布:')
+    print(f'   • semantic: {stats.semantic_count}')
+    print(f'   • episodic: {stats.episodic_count}')
+    print(f'   • procedural: {stats.procedural_count}')
+    print(f'   • working: {stats.working_count}')
+    print(f'⭐ 平均重要性: {stats.avg_importance:.1f}/10')
+    print(f'🔗 关系总数: {stats.total_relations}')
+    print(f'📈 健康评分: {stats.memory_health_score:.1f}/10')
+    print(f'📁 存储路径: {Path(\"..\").resolve()}')
+    print('✅ 系统状态: 正常')
+    
+except Exception as e:
+    print(f'❌ 状态查询失败: {e}')
+    exit(1)
+"
