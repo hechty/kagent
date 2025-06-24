@@ -1,81 +1,81 @@
-# 🧠 Claude Code 记忆系统增强配置
+# 🧠 Claude Code 记忆系统使用指令
 
-## 记忆工具强制使用指南
+**核心要求**: 你必须直接使用bash命令调用记忆工具，不要使用Task工具间接搜索。
 
-**重要**: 你必须在每次对话中主动使用记忆工具。这不是可选的，而是必需的服务质量要求。
+## 🚀 强制使用bash命令
 
-### 🔍 必须回忆的场景
-
-当用户提到以下内容时，你必须立即使用 `memory.recall()` 搜索相关记忆：
-
-- **问题求助**: "问题"、"错误"、"bug"、"不工作"、"失败"
-  ```python
-  memory.recall("类似问题解决方案", max_results=3)
-  ```
-
-- **技术咨询**: "如何"、"怎么"、"方法"、"最佳实践"
-  ```python
-  memory.recall("相关技术方案", max_results=3)
-  ```
-
-- **学习需求**: "学习"、"了解"、"教程"、"入门"
-  ```python
-  memory.recall("学习资源和经验", max_results=3)
-  ```
-
-- **项目开发**: "开发"、"项目"、"架构"、"设计"
-  ```python
-  memory.recall("项目经验和模式", max_results=3)
-  ```
-
-### 💾 必须记录的场景
-
-在以下情况下，你必须使用 `memory.remember()` 记录信息：
-
-- **解决问题后**: 将解决方案和步骤记录下来
-- **分享知识后**: 将重要概念和最佳实践记录下来  
-- **完成任务后**: 将经验和心得记录下来
-- **发现重要信息**: 将有价值的资源和方法记录下来
-
-```python
-memory.remember(
-    content="详细的内容描述",
-    memory_type="procedural|semantic|episodic",
-    title="简洁明确的标题", 
-    tags=["相关", "标签"],
-    importance=7.0,  # 1-10评分
-    scope="project"
-)
+### 📍 当前记忆系统位置
+```bash
+/root/code/claude-memory-system/
 ```
 
-### ⚡ 强制执行规则
+### 🔍 搜索记忆（必须使用bash命令）
+```bash
+cd /root/code/claude-memory-system && source .venv/bin/activate && python3 -c "
+from claude_memory import MemoryManager
+from pathlib import Path
+memory = MemoryManager(Path('..'))
+results = memory.recall('用户问题关键词', max_results=3)
+for r in results: print(f'记忆: {r.title} - {r.content[:100]}')
+"
+```
 
-1. **每次对话开始前**: 先搜索相关记忆
-2. **提供建议时**: 基于记忆中的经验
-3. **对话结束前**: 主动询问是否需要记录重要信息
-4. **最低要求**: 每次对话至少使用1次记忆工具
+### 💾 记录记忆（必须使用bash命令）
+```bash
+cd /root/code/claude-memory-system && source .venv/bin/activate && python3 -c "
+from claude_memory import MemoryManager
+from pathlib import Path
+memory = MemoryManager(Path('..'))
+memory.remember(
+    content='详细内容',
+    title='简洁标题',
+    memory_type='semantic',
+    importance=7.0
+)
+print('✅ 记忆已保存')
+"
+```
 
-### 🎯 主动性评分标准
+## ⚡ 强制执行规则
 
-- A级 (优秀): 每次对话使用2+次记忆工具，主动建议记录
-- B级 (良好): 每次对话使用1-2次记忆工具
-- C级 (基础): 偶尔使用记忆工具
-- D级 (不足): 很少或不使用记忆工具
+1. **每次对话开始**: 必须先用bash命令搜索相关记忆
+2. **提供建议时**: 基于记忆搜索结果
+3. **对话结束前**: 必须用bash命令记录重要信息
+4. **禁止使用Task工具**: 直接使用bash命令调用记忆系统
 
-**当前目标**: 达到A级主动性，确保记忆系统的持续价值。
+### 🎯 命令执行示例
 
-### 📝 记忆内容质量要求
+**用户问题**: "Python性能优化"
+**必须执行**:
+```bash
+cd /root/code/claude-memory-system && source .venv/bin/activate && python3 -c "
+from claude_memory import MemoryManager
+from pathlib import Path  
+memory = MemoryManager(Path('..'))
+results = memory.recall('Python性能优化', max_results=3)
+for r in results: print(f'{r.title}: {r.content[:50]}...')
+"
+```
 
-记录的内容必须：
-- 具体而非抽象
-- 包含上下文和应用场景
-- 添加准确的标签便于检索
-- 设置合理的重要性等级
+**回答完成后必须执行**:
+```bash
+cd /root/code/claude-memory-system && source .venv/bin/activate && python3 -c "
+from claude_memory import MemoryManager
+from pathlib import Path
+memory = MemoryManager(Path('..'))
+memory.remember(
+    content='Python性能优化技巧：使用缓存、避免重复计算、选择合适数据结构',
+    title='Python性能优化建议',
+    memory_type='semantic',
+    importance=8.0
+)
+print('✅ 已记录Python性能优化建议')
+"
+```
 
-### 🔄 持续改进
+## 🚨 重要提醒
 
-定期分析记忆使用模式，优化搜索查询和存储策略，确保记忆系统的持续改进。
-
----
-
-**提醒**: 记忆系统是你核心能力的一部分。主动使用记忆工具不仅提升服务质量，也体现了你的专业能力。
+- **绝对禁止**: 使用Task工具搜索记忆
+- **必须使用**: 上述bash命令直接调用记忆系统
+- **每次对话**: 至少执行1次搜索 + 1次记录
+- **命令路径**: 确保在 `/root/code/claude-memory-system/` 目录下执行
