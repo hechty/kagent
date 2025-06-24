@@ -1,0 +1,18 @@
+ext.pathMapper = [:]
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/lib/util_rt.jar', '/tmp/tmppt70k7/util_rt.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/lib/external-system-rt.jar', '/tmp/tmppt70k7/external-system-rt.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/gradle/lib/gradle-tooling-extension-api.jar', '/tmp/tmpc90xbY/gradle-tooling-extension-api.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/gradle/lib/gradle-tooling-extension-impl.jar', '/tmp/tmpc90xbY/gradle-tooling-extension-impl.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/lib/util_rt.jar', '/tmp/tmppt70k7/util_rt.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/lib/external-system-rt.jar', '/tmp/tmppt70k7/external-system-rt.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/gradle/lib/gradle-tooling-extension-api.jar', '/tmp/tmpc90xbY/gradle-tooling-extension-api.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/gradle/lib/gradle-tooling-extension-impl.jar', '/tmp/tmpc90xbY/gradle-tooling-extension-impl.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/Kotlin/lib/kotlin-gradle-tooling.jar', '/tmp/tmpyrknIe/kotlin-gradle-tooling.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/gradle/lib/gradle-api-8.13.jar', '/tmp/tmpc90xbY/gradle-api-8.13.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/compose-ide-plugin/lib/modules/intellij.compose.ide.plugin.gradleTooling.rt.jar', '/tmp/tmpEzkwWY/intellij.compose.ide.plugin.gradleTooling.rt.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/micronaut/lib/micronaut-gradle-tooling.jar', '/tmp/tmpOqFoVc/micronaut-gradle-tooling.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/lib/opentelemetry.jar', '/tmp/tmppt70k7/opentelemetry.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/lib/util-8.jar', '/tmp/tmppt70k7/util-8.jar')
+ext.pathMapper.put('C:/Users/hchw1/AppData/Local/Programs/IntelliJ IDEA Ultimate/plugins/ktor/lib/ktor-gradle-tooling.jar', '/tmp/tmppJz2AV/ktor-gradle-tooling.jar')
+ext.pathMapper.put("<<target java executable path>>", '/usr/lib/jvm/java-21-openjdk-amd64/bin/java')
+ext.mapPath = { path -> pathMapper.get(path) ?: path }
