@@ -22,3 +22,9 @@ openrouter:
       generation_type: "standard"
     - model_id: "google/gemini-2.5-flash-lite-preview-06-17"
       generation_type: "standard"
+
+siliconflow:
+  base_url: "https://api.siliconflow.cn/v1"
+  api_key: 'sk-lpuljmmwvjwpkluhkglyuqvqhnpzyeumgftjmjlnkxmgjqct'
+embedding_model_name: "Pro/BAAI/bge-m3" # 注意：最大批次64
+rerank_model_name: "Pro/BAAI/bge-reranker-v2-m3"

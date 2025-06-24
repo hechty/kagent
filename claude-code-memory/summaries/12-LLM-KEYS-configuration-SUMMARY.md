@@ -3,6 +3,7 @@
 ## 支持的提供商
 - **DeepSeek**: sk-325be9f2c5594c3cae07495b28817043
 - **OpenRouter**: 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
+- **siliconflow**: sk-lpuljmmwvjwpkluhkglyuqvqhnpzyeumgftjmjlnkxmgjqct
 
 ## 密钥管理
 - 环境变量配置
@@ -17,6 +18,10 @@
 ### OpenRouter
 - 模型: gpt-4.1, gemini-2.5-pro, claude-sonnet-4
 - 特点: 多模型接入
+
+### siliconflow
+- 模型: Pro/BAAI/bge-m3，Pro/BAAI/bge-reranker-v2-m3
+- 特点: 专用于embedding和rerank
 
 ## 使用注意事项
 - 密钥安全存储
