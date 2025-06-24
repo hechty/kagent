@@ -313,66 +313,84 @@ class MemoryMCPServer:
                 }
             }
 
-async def handle_stdio():
+def handle_stdio():
     """处理标准输入输出通信"""
     server = MemoryMCPServer()
+    logger.info("MCP服务器启动，等待请求...")
     
-    # 发送初始化消息
-    init_response = {
-        "jsonrpc": "2.0",
-        "result": {
-            "protocolVersion": "2024-11-05",
-            "capabilities": {
-                "tools": {}
-            },
-            "serverInfo": {
-                "name": "claude-memory-mcp-server",
-                "version": "1.0.0"
-            }
-        }
-    }
-    
-    while True:
-        try:
-            # 读取请求
-            line = await asyncio.get_event_loop().run_in_executor(None, sys.stdin.readline)
-            if not line:
-                break
-                
+    try:
+        while True:
             try:
-                request = json.loads(line.strip())
-            except json.JSONDecodeError:
-                continue
-            
-            # 处理请求
-            response = server.handle_request(request)
-            
-            # 构建完整响应
-            full_response = {
-                "jsonrpc": "2.0",
-                "id": request.get("id"),
-                "result": response if "error" not in response else None,
-                "error": response.get("error") if "error" in response else None
-            }
-            
-            # 发送响应
-            print(json.dumps(full_response), flush=True)
-            
-        except Exception as e:
-            logger.error(f"处理请求时发生错误: {e}")
-            error_response = {
-                "jsonrpc": "2.0",
-                "id": None,
-                "error": {
-                    "code": -32603,
-                    "message": f"Internal error: {str(e)}"
+                line = sys.stdin.readline()
+                if not line:
+                    break
+                
+                line = line.strip()
+                if not line:
+                    continue
+                
+                try:
+                    request = json.loads(line)
+                except json.JSONDecodeError as e:
+                    logger.error(f"JSON解析失败: {e}")
+                    continue
+                
+                logger.info(f"收到请求: {request.get('method', 'unknown')}")
+                
+                # 处理初始化请求
+                if request.get("method") == "initialize":
+                    response = {
+                        "jsonrpc": "2.0",
+                        "id": request.get("id"),
+                        "result": {
+                            "protocolVersion": "2024-11-05",
+                            "capabilities": {
+                                "tools": {}
+                            },
+                            "serverInfo": {
+                                "name": "claude-memory-mcp-server",
+                                "version": "1.0.0"
+                            }
+                        }
+                    }
+                else:
+                    # 处理其他请求
+                    result = server.handle_request(request)
+                    response = {
+                        "jsonrpc": "2.0",
+                        "id": request.get("id"),
+                        "result": result if "error" not in result else None,
+                        "error": result.get("error") if "error" in result else None
+                    }
+                
+                # 发送响应
+                response_json = json.dumps(response)
+                print(response_json, flush=True)
+                logger.info(f"发送响应: {response.get('result', {}).get('tools', [])} 个工具" if request.get('method') == 'tools/list' else "响应已发送")
+                
+            except KeyboardInterrupt:
+                logger.info("收到中断信号，退出...")
+                break
+            except Exception as e:
+                logger.error(f"处理请求时发生错误: {e}")
+                error_response = {
+                    "jsonrpc": "2.0",
+                    "id": request.get("id") if 'request' in locals() else None,
+                    "error": {
+                        "code": -32603,
+                        "message": f"Internal error: {str(e)}"
+                    }
                 }
-            }
-            print(json.dumps(error_response), flush=True)
+                print(json.dumps(error_response), flush=True)
+                
+    except Exception as e:
+        logger.error(f"服务器运行时发生错误: {e}")
+    
+    logger.info("MCP服务器已停止")
 
 if __name__ == "__main__":
     try:
-        asyncio.run(handle_stdio())
+        handle_stdio()
     except KeyboardInterrupt:
         logger.info("MCP服务器已停止")
     except Exception as e:
