@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/root/code/claude-memory-system/.venv/bin/python
 """
 Claude Code 记忆系统 MCP 服务器
 提供简洁的记忆工具API，无需关心底层实现细节
@@ -8,17 +8,22 @@ import asyncio
 import json
 import sys
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# 添加记忆系统路径
-sys.path.insert(0, str(Path(__file__).parent / "claude-memory-system"))
+# 设置工作目录和路径
+memory_system_path = Path(__file__).parent / "claude-memory-system"
+os.chdir(str(memory_system_path))
+sys.path.insert(0, str(memory_system_path))
 
 try:
     from claude_memory import MemoryManager
     from claude_memory.models.memory import MemoryType
 except ImportError as e:
     print(f"Error importing memory system: {e}", file=sys.stderr)
+    print(f"Current working directory: {os.getcwd()}", file=sys.stderr)
+    print(f"Python path: {sys.path[:3]}", file=sys.stderr)
     sys.exit(1)
 
 # 设置日志
@@ -30,7 +35,7 @@ class MemoryMCPServer:
     
     def __init__(self):
         self.memory_manager = None
-        self.project_path = Path("/root/code")
+        self.project_path = Path("..")
         
     def initialize_memory(self):
         """初始化记忆管理器"""
