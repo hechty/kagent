@@ -22,9 +22,9 @@ A Kotlin-based service for integrating with multiple Large Language Model (LLM) 
 ### Build and Run
 
 ```bash
-cd code/llm-service
-./gradlew build
-./gradlew run
+# 从根目录运行
+./gradlew :llm-service:build
+./gradlew :llm-service:run
 ```
 
 ### API Endpoints

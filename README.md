@@ -1,33 +1,17 @@
 # LLM Service Multi-Module Project
 
-这是一个基于Kotlin 2.1.0 + Ktor构建的多模块LLM服务项目，将DSL功能独立成一个单独的模块以便于测试和改进。
+A Kotlin-based multi-module project for integrating with multiple Large Language Model (LLM) providers.
 
-## 项目结构
+## 📁 Project Structure
 
 ```
-llm-service-multi-module/
-├── build.gradle.kts          # 根项目构建配置
-├── settings.gradle.kts       # 多模块项目设置
-├── llm-dsl-core/            # DSL核心模块 🎯
-│   ├── build.gradle.kts     # DSL模块构建配置
-│   └── src/
-│       ├── main/kotlin/com/llmservice/
-│       │   ├── dsl/         # DSL实现
-│       │   ├── model/       # 共享数据模型
-│       │   ├── service/     # 服务接口
-│       │   ├── provider/    # LLM提供商实现
-│       │   └── config/      # DSL配置
-│       └── test/kotlin/     # DSL测试
-└── llm-service/             # 主服务模块
-    ├── build.gradle.kts     # 服务模块构建配置
-    └── src/
-        ├── main/kotlin/com/llmservice/
-        │   ├── Application.kt    # 服务主入口
-        │   ├── analysis/        # 分析工具
-        │   ├── discussion/      # 讨论工具
-        │   ├── examples/        # 使用示例
-        │   └── execution/       # 执行引擎
-        └── test/kotlin/         # 服务测试
+├── llm-dsl-core/           # DSL核心模块 - 提供DSL语法和基础功能
+├── llm-service/            # 服务模块 - HTTP API和服务层
+├── docs/                   # 📖 项目文档
+│   ├── design/            # 设计文档
+│   ├── guides/            # 使用指南  
+│   └── tutorials/         # 教程和练习
+└── build.gradle.kts       # 根项目构建配置
 ```
 
 ## 模块说明
@@ -46,29 +30,27 @@ llm-service-multi-module/
 - **依赖**: llm-dsl-core模块
 - **包含**: HTTP服务器、分析工具、示例代码
 
-## 构建和运行
+## 📖 文档
+
+- **完整文档**: [docs/](docs/) 
+- **服务API文档**: [llm-service/README.md](llm-service/README.md)
+- **DSL使用指南**: [docs/guides/usage-guide.md](docs/guides/usage-guide.md)
+
+## 🚀 Quick Start
 
 ### 构建整个项目
 ```bash
-cd /root/code
-/opt/gradle/bin/gradle build --init-script llm-service/init.gradle
+./gradlew build
+```
+
+### 运行服务
+```bash
+./gradlew :llm-service:run
 ```
 
 ### 运行DSL测试
 ```bash
-# 运行DSL演示
-/opt/gradle/bin/gradle :llm-dsl-core:runDSLDemo --init-script llm-service/init.gradle
-
-# 运行DSL基础测试
-/opt/gradle/bin/gradle :llm-dsl-core:runDSLTest --init-script llm-service/init.gradle
-
-# 运行独立DSL测试
-/opt/gradle/bin/gradle :llm-dsl-core:runStandaloneDSLTest --init-script llm-service/init.gradle
-```
-
-### 运行主服务
-```bash
-/opt/gradle/bin/gradle :llm-service:run --init-script llm-service/init.gradle
+./gradlew :llm-dsl-core:runDSLTest
 ```
 
 ## DSL使用示例
